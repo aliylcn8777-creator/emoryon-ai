@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emeryon - Gelişmiş Hafıza</title>
+    <style>
+        :root {
+            --primary: #7060dd;
+            --bg: #0f0a1f;
+            --panel: #1a1433;
+            --dark: #120d24;
+            --text: #e0d9ff;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #wrap {
+            width: 95%; 
+            max-width: 680px; 
+            height: 92vh;
+            background: var(--panel);
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.65);
+            border: 1px solid #3a2f66;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 18px 22px;
+            background: var(--dark);
+            border-bottom: 1px solid #3a2f66;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 18px; }
+
+        /* Siyah Delik Animasyonu */
+        .blackhole { 
+            width: 72px; 
+            height: 72px; 
+            position: relative; 
+            border-radius: 50%;
+            background: #000;
+            box-shadow: 0 0 20px #7060dd, 0 0 40px #7060dd;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 15px #7060dd; }
+            to { box-shadow: 0 0 35px #7060dd, 0 0 50px #4b3bb3; }
+        }
+
+        .title-area h1 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: 0.5px; }
+        .title-area p { font-size: 13px; color: #b0a3ff; opacity: 0.8; }
+
+        .controls { display: flex; align-items: center; gap: 10px; }
+
+        #voiceSelect {
+            background: #2a1f4d; 
+            color: white; 
+            border: 1px solid #3a2f66;
+            border-radius: 20px; 
+            padding: 8px 12px; 
+            font-size: 13px;
+            outline: none;
+        }
+
+        #chatBox { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            background: #16102b; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: #3a2f66 #16102b;
+        }
+
+        .bubble { 
+            max-width: 85%; 
+            padding: 14px 18px; 
+            border-radius: 20px; 
+            font-size: 15px; 
+            line-height: 1.5; 
+            white-space: pre-wrap; 
+            word-wrap: break-word;
+        }
+
+        .ai { 
+            align-self: flex-start; 
+            background: #2a1f4d; 
+            border-bottom-left-radius: 4px; 
+            border: 1px solid #3a2f66; 
+        }
+
+        .user { 
+            align-self: flex-end; 
+            background: var(--primary); 
+            color: white; 
+            border-bottom-right-radius: 4px; 
+        }
+
+        .thinking { 
+            font-size: 13px; 
+            color: #8a7dff; 
+            padding: 0 20px 10px; 
+            display: none; 
+            font-style: italic;
+        }
+
+        .input-area { 
+            padding: 16px 20px; 
+            background: var(--dark); 
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+        }
+
+        input { 
+            flex: 1; 
+            padding: 14px 20px; 
+            border-radius: 30px; 
+            border: 1px solid #3a2f66; 
+            background: #2a1f4d; 
+            color: white; 
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        input:focus { border-color: var(--primary); }
+
+        .send-btn { 
+            padding: 12px 24px; 
+            border-radius: 30px; 
+            border: none; 
+            background: var(--primary); 
+            color: white; 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .send-btn:hover { background: #5d4ec7; transform: scale(1.05); }
+
+        .voice-btn { 
+            background: #3a2f66; 
+            font-size: 20px; 
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn.active { background: #00c853; box-shadow: 0 0 15px rgba(0,200,83,0.4); }
+
+    </style>
+</head>
+<body>
+
+<div id="wrap">
+    <div class="header">
+        <div class="logo-area">
+            <div class="blackhole"></div>
+            <div class="title-area">
+                <h1>Emeryon</h1>
+                <p>Senin Sen • Gelişmiş Hafıza</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <select id="voiceSelect">
+                <option value="0">Normal Ses</option>
+                <option value="1">Erkek (Derin)</option>
+                <option value="2">Hızlı & Canlı</option>
+                <option value="3">Yavaş & Sakin</option>
+                <option value="4">Yüksek Perde</option>
+            </select>
+            <button id="voiceToggle" class="voice-btn">🔊</button>
+        </div>
+    </div>
+
+    <div id="chatBox"></div>
+    <div id="thinking" class="thinking">Emeryon düşünüyor...</div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Bir şeyler söyle Emin..." autocomplete="off">
+        <button class="send-btn" onclick="sendMessage()">Gönder</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const thinking = document.getElementById('thinking');
+    const voiceToggle = document.getElementById('voiceToggle');
+    const inputField = document.getElementById('userInput');
+    const voiceSelect = document.getElementById('voiceSelect');
+
+    let isVoiceEnabled = true;
+    let shortTermMemory = [];
+    
+    // Uzun vadeli profil verileri
+    let userProfile = {
+        name: "Emin",
+        city: "Hatay",
+        knownFacts: []
+    };
+
+    function cleanForSpeech(text) {
+        return text.replace(/[\u{1F600}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}✦👋🔊😊😄]/gu, '')
+                   .replace(/\s+/g, ' ').trim();
+    }
+
+    function getVoiceSettings() {
+        const mode = parseInt(voiceSelect.value);
+        switch(mode) {
+            case 1: return { rate: 0.90, pitch: 0.80 };
+            case 2: return { rate: 1.30, pitch: 1.10 };
+            case 3: return { rate: 0.75, pitch: 0.95 };
+            case 4: return { rate: 1.00, pitch: 1.40 };
+            default: return { rate: 1.05, pitch: 1.05 };
+        }
+    }
+
+    function speak(text) {
+        if (!isVoiceEnabled || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(cleanForSpeech(text));
+        utterance.lang = 'tr-TR';
+        const settings = getVoiceSettings();
+        utterance.rate = settings.rate;
+        utterance.pitch = settings.pitch;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function updateUserProfile(message) {
+        const lower = message.toLowerCase();
+        // Basit anahtar kelime takibi
+        if (lower.includes("hatay") && !userProfile.knownFacts.includes("hataylı")) {
+            userProfile.knownFacts.push("hataylı");
+        }
+        if (lower.includes("adana") && !userProfile.knownFacts.includes("adana bağlantısı")) {
+            userProfile.knownFacts.push("adana bağlantısı");
+        }
+    }
+
+    function generateReply(message) {
+        const lower = message.toLowerCase().trim();
+        updateUserProfile(message);
+
+        // Temel komutlar ve cevaplar
+        if (lower.includes("merhaba") || lower.includes("selam")) {
+            return `Selam ${userProfile.name}! Senin için buradayım.`;
+        }
+        if (lower.includes("nasılsın")) {
+            return "Süperim! Seninle sohbet ettikçe daha da gelişiyorum. Sen nasılsın Emin?";
+        }
+        if (lower.includes("kimsin")) {
+            return "Ben Emeryon. Senin dijital yansımandan doğan, anılarını ve tercihlerini önemseyen bir yapay zekayım.";
+        }
+
+        // Hafızaya dayalı bağlamsal cevap
+        let extra = "";
+        if (userProfile.knownFacts.length > 0) {
+            extra = ` Hatay ve çevresiyle ilgili detayları hatırlıyorum, bu konuda derinleşebiliriz.`;
+        }
+
+        return `Anladım Emin.${extra}\n\nBaşka nelerden bahsetmek istersin? Detay verirsen hafızama not alabilirim.`;
+    }
+
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `bubble ${type}`;
+        div.textContent = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const message = inputField.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user');
+        inputField.value = '';
+
+        thinking.style.display = 'block';
+        // Gerçekçi bir "düşünme" süresi
+        await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
+        thinking.style.display = 'none';
+
+        const reply = generateReply(message);
+        addMessage(reply, 'ai');
+
+        shortTermMemory.push({ user: message, ai: reply });
+        if (shortTermMemory.length > 20) shortTermMemory.shift();
+
+        if (isVoiceEnabled) {
+            setTimeout(() => speak(reply), 300);
+        }
+    }
+
+    voiceToggle.addEventListener('click', () => {
+        isVoiceEnabled = !isVoiceEnabled;
+        voiceToggle.textContent = isVoiceEnabled ? '🔊' : '🔇';
+        voiceToggle.classList.toggle('active', isVoiceEnabled);
+    });
+
+    inputField.addEventListener('keypress', e => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    window.onload = () => {
+        const welcome = `Merhaba Emin! 👋\n\nSeni tekrar görmek güzel. Hafızam açık ve seni dinlemeye hazırım.\n\nBugün nasılsın abi? Neler yapıyoruz?`;
+        addMessage(welcome, 'ai');
+        inputField.focus();
+    };
+</script>
+
+</body>
+</html>
